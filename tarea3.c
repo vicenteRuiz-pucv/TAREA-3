@@ -5,8 +5,8 @@
 #include "tdas/extra.h"
 #include <string.h>
 #include <time.h>
-
-
+#include "tdas/stack.h"
+#include "tdas/queue.h"
 
 // Definición de la estructura para el estado del puzzle
 typedef struct {
@@ -15,6 +15,7 @@ typedef struct {
     int y;    // Posición x del agente
     int steps; // Pasos realizados hasta la posición actual
     List* actions; //Secuencia de movimientos para llegar al estado
+    int visitado;
 } State;
 
 int distancia_L1(State* state) {
@@ -30,6 +31,8 @@ void imprimirEstado(const State *estado) {
             else if (i == N-1 && j == N-1) printf(" M ");
             else if (estado->maze[i][j] == 0)
                 printf(" . "); // Imprime un espacio en blanco para el espacio vacío
+            else if(estado->maze[i][j] == 2)
+                printf(" * ");
             else
                 printf("[X]");
         }
@@ -66,7 +69,7 @@ State* transition(State * actual, int accion)
     else if(accion == 2) nuevo->x++;
     else if(accion == 3) nuevo->y--;
     else if(accion == 4) nuevo->y++;
-
+    nuevo->visitado= 0;
     nuevo->steps++;
     nuevo->actions = list_create();
     //cada vez que hay un movimiento transition se debe añadir al historial..
@@ -105,6 +108,124 @@ List * obtener_adyacentes(State* actual)
         list_pushBack(adyacentes,estadoValido);
     }
     return adyacentes;
+}
+
+//ALGORITMOS DE BUSQUEDA!
+//Busqueda en Profundidad
+void dfs(State* estado_inicial)
+{
+    //UTILIZAMOS UN STACK!
+    Stack * pila = stack_create(NULL);
+    State* copia= (State *) malloc(sizeof(State));
+    *copia=*estado_inicial;
+    
+    stack_push(pila,copia);
+    while(stack_top(pila) != NULL)
+    {
+         State* estado = (State *) stack_pop(pila);
+         if(estado->visitado == 1) 
+         {    
+             free(estado);
+             continue;
+         }
+         estado->visitado = 1;
+         
+         if(is_final_state(estado))
+         {
+             imprimirEstado(estado);
+             break;
+         }
+         estado->maze[estado->x][estado->y] = 2;    
+        
+        //else continue;
+        List* lista = obtener_adyacentes(estado);
+        State* temp = (State*) list_first(lista);
+        while(temp)
+            {
+                stack_push(pila,temp);
+                temp= (State*) list_next(lista);
+            }
+        free(lista);
+    }
+}
+
+//Busqueda en anchura con cola!
+void bfs(State* estado_inicial)
+{
+    //UTILIZAMOS UN QUEUE!
+    Queue * cola = queue_create(NULL);
+    State* copia= (State *) malloc(sizeof(State));
+    *copia=*estado_inicial;
+    
+    queue_insert(cola,copia);
+    while(queue_front(cola) != NULL)
+    {
+         State* estado = (State *) queue_remove(cola);
+         if(estado->visitado == 1)
+         {
+             free(estado);
+             continue;
+         }  
+         estado->visitado = 1;
+
+         if(is_final_state(estado))
+         {
+             imprimirEstado(estado);
+             break;
+         }
+         estado->maze[estado->x][estado->y] = 2;    
+
+        //else continue;
+        List* lista = obtener_adyacentes(estado);
+        State* temp = (State*) list_first(lista);
+        while(temp)
+            {
+                queue_insert(cola,temp);
+                temp= (State*) list_next(lista);
+            }
+        free(lista);
+    }
+}
+//busqueda A*
+void best_first(State* estado_inicial)
+{
+    //UTILIZAMOS UN HEAP!
+    Heap * heap = heap_create();
+    State* copia= (State *) malloc(sizeof(State));
+    *copia=*estado_inicial;
+
+    int prioridad= copia->steps + distancia_L1(copia);
+    heap_push(heap,copia,-prioridad);
+    while(heap_top(heap) != NULL)
+    {
+         State* estado = (State *) heap_top(heap);
+         heap_pop(heap);
+         if(estado->visitado == 1) 
+         {    
+             free(estado);
+             continue;
+         }
+         estado->visitado = 1;
+
+         if(is_final_state(estado))
+         {
+             imprimirEstado(estado);
+             break;
+         }
+         estado->maze[estado->x][estado->y] = 2;    
+
+        //else continue;
+        List* lista = obtener_adyacentes(estado);
+        State* temp = (State*) list_first(lista);
+        while(temp)
+            {
+                int prioridadF= temp->steps + distancia_L1(temp);
+                heap_push(heap,temp,-prioridadF);
+                
+                temp= (State*) list_next(lista);
+            }
+        free(lista);
+    }
 }
 
 int main() {
@@ -159,6 +280,7 @@ int main() {
     //EJEMPLO EN MAIN PARA GRAFO IMPLICITO!
     printf("\n");
     printf("\n");
+    /*
     printf("Ejemplo de Grafo Implicito\n");
 
     List * adyacentes = obtener_adyacentes(&estado_inicial);
@@ -180,11 +302,11 @@ int main() {
             }
     }
     printf("--------------------------------------------------------------\n");
-    
+    */
     //OPCIONES DE LAS FUNCIONALIDADES
     char opcion;
     do {
-        printf("\n***** EJEMPLO MENU ******\n");
+        printf("\n***** MENU ******\n");
         puts("========================================");
         puts("     Escoge método de búsqueda");
         puts("========================================");
@@ -199,13 +321,13 @@ int main() {
 
         switch (opcion) {
         case '1':
-          //dfs(estado_inicial);
+          dfs(&estado_inicial);
           break;
         case '2':
-          //bfs(estado_inicial);
+          bfs(&estado_inicial);
           break;
         case '3':
-          //best_first(estado_inicial);
+          best_first(&estado_inicial);
           break;
         }
 
