@@ -38,7 +38,7 @@ Distancia L1: 18
 
 ***** MENU ******
 ========================================
-     Escoge método de búsqueda
+  Escoge método de búsqueda
 ========================================
 1) Búsqueda en Profundidad
 2) Buscar en Anchura
