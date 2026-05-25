@@ -22,16 +22,27 @@ las fugas de memoria o la falta de uso de los free para liberar la memoria.
 Ingrese la dificultad del laberinto (porcentaje de obstáculos, 0 a 100): 90
 
 Estado inicial del puzzle:
+
  A  .  .  .  .  .  .  . [X][X]
+ 
  .  .  . [X] .  .  .  . [X] . 
+ 
  .  . [X] . [X][X] . [X][X][X]
+ 
  .  . [X][X] .  .  . [X][X] . 
+ 
 [X][X][X][X] . [X][X][X][X][X]
+
 [X] . [X][X] .  . [X][X][X][X]
+
 [X][X][X][X] .  . [X][X][X][X]
+
  . [X][X][X][X] . [X][X][X][X]
+ 
 [X][X][X][X][X] .  .  .  .  . 
+
 [X][X][X][X][X] .  .  . [X] M 
+
 Distancia L1: 18
 
 
@@ -45,6 +56,7 @@ Distancia L1: 18
 3) Buscar Mejor Primero
 4) Salir
 Ingrese su opción: 1
+
  I  *  *  *  *  *  *  * [X][X]
  .  .  . [X] .  .  *  * [X] . 
  .  . [X] . [X][X] * [X][X][X]
